@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WFM · Agent Metrics</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImJnIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3R5bGU9InN0b3AtY29sb3I6IzUwMDBiMyIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiMyYTAwNjAiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgPC9kZWZzPgogIDxyZWN0IHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCIgcng9IjEwIiBmaWxsPSJ1cmwoI2JnKSIvPgogIDx0ZXh0IHg9IjMyIiB5PSI0MCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSIKICAgIGZvbnQtZmFtaWx5PSJBcmlhbCBCbGFjaywgc2Fucy1zZXJpZiIgZm9udC13ZWlnaHQ9IjkwMCIgZm9udC1zaXplPSIyMCIKICAgIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMS41IiBsZXR0ZXItc3BhY2luZz0iMSI+V0ZNPC90ZXh0PgogIDx0ZXh0IHg9IjMyIiB5PSI0MCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSIKICAgIGZvbnQtZmFtaWx5PSJBcmlhbCBCbGFjaywgc2Fucy1zZXJpZiIgZm9udC13ZWlnaHQ9IjkwMCIgZm9udC1zaXplPSIyMCIKICAgIGZpbGw9IiMxYTAwNTAiIGxldHRlci1zcGFjaW5nPSIxIj5XRk08L3RleHQ+Cjwvc3ZnPg==">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --orange:    #ff6400;
+  --orange-lt: #fff2ea;
+  --orange-md: #ffd4b3;
+  --purple:    #5000b3;
+  --purple-lt: #f0ebff;
+  --purple-md: #c9b3f0;
+  --bg:        #f5f5f8;
+  --surface:   #ffffff;
+  --surface2:  #f9f9fc;
+  --border:    #e4e2ef;
+  --text:      #1a1830;
+  --text2:     #4a4870;
+  --muted:     #8b89aa;
+  --red:       #e8274b;
+  --red-lt:    #ffeef2;
+  --yellow:    #d97706;
+  --yellow-lt: #fffbea;
+  --green:     #0a7c4e;
+  --green-lt:  #edfaf3;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: 'Plus Jakarta Sans', sans-serif; min-height: 100vh; font-size: 14px; line-height: 1.5; }
+
+/* ── TOPBAR ── */
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 28px; height: 58px; background: var(--surface);
+  border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 300;
+  box-shadow: 0 1px 4px rgba(80,0,179,.07);
+}
+.brand { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 18px; display: flex; align-items: center; gap: 10px; color: var(--text); }
+.brand-icon { width: 34px; height: 34px; background: linear-gradient(135deg, var(--orange), var(--purple)); border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+.brand em { color: var(--orange); font-style: normal; }
+.topbar-right { display: flex; align-items: center; gap: 10px; }
+.meta-txt { font-size: 13px; color: var(--muted); }
+.tbtn {
+  display: flex; align-items: center; gap: 6px; border: none; border-radius: 8px;
+  padding: 7px 15px; font-family: 'Plus Jakarta Sans'; font-weight: 600; font-size: 13px; cursor: pointer; transition: all .2s; white-space: nowrap;
+}
+.tbtn-orange { background: var(--orange); color: #fff; }
+.tbtn-orange:hover { background: #d95300; }
+.tbtn-outline { background: var(--surface); color: var(--purple); border: 1.5px solid var(--purple-md); }
+.tbtn-outline:hover { background: var(--purple-lt); border-color: var(--purple); }
+#file-input { display: none; }
+
+/* ── LANDING ── */
+#landing {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  min-height: calc(100vh - 58px); padding: 40px 20px;
+  background: radial-gradient(ellipse 70% 50% at 50% 35%, var(--orange-lt), var(--bg) 70%),
+              radial-gradient(ellipse 40% 40% at 80% 80%, var(--purple-lt), transparent);
+}
+.land-icon { font-size: 68px; margin-bottom: 22px; animation: float 3.5s ease-in-out infinite; }
+@keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-9px)} }
+.land-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 34px; margin-bottom: 10px; text-align: center; }
+.land-title em { color: var(--orange); font-style: normal; }
+.land-sub { color: var(--text2); font-size: 15px; margin-bottom: 34px; text-align: center; max-width: 440px; line-height: 1.65; }
+.land-upload { display: flex; align-items: center; gap: 10px; background: var(--orange); color: #fff; border: none; border-radius: 11px; padding: 14px 34px; font-family: 'Syne'; font-weight: 700; font-size: 16px; cursor: pointer; transition: background .2s, transform .2s; margin-bottom: 20px; box-shadow: 0 4px 20px rgba(255,100,0,.35); }
+.land-upload:hover { background: #d95300; transform: translateY(-2px); }
+.land-note { font-size: 13px; color: var(--muted); }
+.land-note span { color: var(--purple); font-weight: 600; }
+.land-chips { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-top: 28px; }
+.chip { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 5px 14px; font-size: 13px; color: var(--text2); box-shadow: 0 1px 3px rgba(80,0,179,.06); }
+
+/* ── LOADING ── */
+#loading { display: none; flex-direction: column; align-items: center; justify-content: center; min-height: calc(100vh - 58px); }
+.spinner { width: 46px; height: 46px; border: 3px solid var(--orange-md); border-top-color: var(--orange); border-radius: 50%; animation: spin .75s linear infinite; margin-bottom: 18px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.load-txt { font-family: 'Syne'; font-weight: 700; font-size: 18px; margin-bottom: 6px; }
+.load-sub { font-size: 14px; color: var(--muted); }
+
+/* ── THRESHOLD MODAL ── */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(26,24,48,.45); z-index: 1000;
+  display: flex; align-items: center; justify-content: center; padding: 20px;
+  opacity: 0; pointer-events: none; transition: opacity .22s;
+}
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+.modal {
+  background: var(--surface); border-radius: 16px; width: 100%; max-width: 560px;
+  box-shadow: 0 20px 60px rgba(80,0,179,.18); overflow: hidden;
+  transform: translateY(12px) scale(.98); transition: transform .22s;
+}
+.modal-overlay.open .modal { transform: translateY(0) scale(1); }
+.modal-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 20px 24px 18px; border-bottom: 1px solid var(--border);
+  background: linear-gradient(135deg, var(--orange-lt), var(--purple-lt));
+}
+.modal-title { font-family: 'Syne'; font-weight: 800; font-size: 17px; display: flex; align-items: center; gap: 10px; }
+.modal-title span { font-size: 20px; }
+.modal-close { background: none; border: none; font-size: 20px; color: var(--muted); cursor: pointer; line-height: 1; padding: 2px 6px; border-radius: 6px; transition: background .15s; }
+.modal-close:hover { background: var(--border); }
+.modal-body { padding: 22px 24px; }
+.th-section-title { font-family: 'Plus Jakarta Sans'; font-weight: 700; font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 14px; margin-top: 6px; }
+.th-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
+.th-field { display: flex; flex-direction: column; gap: 6px; }
+.th-label { font-size: 13px; font-weight: 600; color: var(--text2); display: flex; align-items: center; gap: 6px; }
+.th-label .th-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.th-input-wrap { display: flex; align-items: center; background: var(--surface2); border: 1.5px solid var(--border); border-radius: 8px; overflow: hidden; transition: border-color .15s; }
+.th-input-wrap:focus-within { border-color: var(--orange); }
+.th-input {
+  flex: 1; border: none; background: transparent; padding: 9px 11px;
+  font-family: 'Plus Jakarta Sans'; font-size: 14px; font-weight: 600; color: var(--text); outline: none;
+}
+.th-unit { padding: 9px 11px 9px 4px; font-size: 12px; color: var(--muted); font-weight: 500; white-space: nowrap; }
+.th-hint { font-size: 12px; color: var(--muted); }
+.th-divider { border: none; border-top: 1px solid var(--border); margin: 4px 0 18px; }
+.modal-foot { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 12px; background: var(--surface2); }
+.th-reset { background: none; border: 1.5px solid var(--border); border-radius: 8px; padding: 8px 16px; font-family: 'Plus Jakarta Sans'; font-size: 13px; color: var(--muted); cursor: pointer; transition: all .15s; }
+.th-reset:hover { border-color: var(--red); color: var(--red); }
+.th-save { background: var(--orange); color: #fff; border: none; border-radius: 8px; padding: 9px 22px; font-family: 'Syne'; font-weight: 700; font-size: 14px; cursor: pointer; transition: background .2s; }
+.th-save:hover { background: #d95300; }
+.th-preview { font-size: 12px; color: var(--muted); }
+
+/* ── THRESHOLD BADGES on KPI cards ── */
+.kpi-threshold { margin-top: 6px; display: flex; align-items: center; gap: 5px; }
+.th-badge-ok  { background: var(--green-lt); color: var(--green); }
+.th-badge-warn{ background: var(--yellow-lt); color: var(--yellow); }
+.th-badge-bad { background: var(--red-lt); color: var(--red); }
+.th-badge { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 10px; }
+
+/* ── FILTERS ── */
+#filters-bar {
+  display: none; gap: 14px; padding: 10px 28px; flex-wrap: wrap;
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  position: sticky; top: 58px; z-index: 200;
+  box-shadow: 0 1px 3px rgba(80,0,179,.05);
+}
+.filter-group { display: flex; flex-direction: column; gap: 3px; }
+.filter-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; font-weight: 600; }
+.ms-wrap { position: relative; }
+.ms-trigger { background: var(--surface2); color: var(--text); border: 1.5px solid var(--border); border-radius: 7px; padding: 6px 30px 6px 11px; font-family: 'Plus Jakarta Sans'; font-size: 13px; cursor: pointer; min-width: 200px; display: flex; align-items: center; justify-content: space-between; gap: 8px; user-select: none; position: relative; transition: border-color .15s; }
+.ms-trigger:hover { border-color: var(--purple-md); }
+.ms-trigger.open { border-color: var(--purple); }
+.ms-txt { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+.ms-badge { background: var(--orange); color: #fff; border-radius: 10px; padding: 1px 7px; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+.ms-arrow { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 9px; transition: transform .2s; }
+.ms-trigger.open .ms-arrow { transform: translateY(-50%) rotate(180deg); }
+.ms-drop { position: absolute; top: calc(100% + 5px); left: 0; z-index: 9999; background: var(--surface); border: 1.5px solid var(--border); border-radius: 10px; min-width: 230px; max-height: 300px; display: flex; flex-direction: column; box-shadow: 0 8px 30px rgba(80,0,179,.14); }
+.ms-drop.hidden { display: none; }
+.ms-search { border: none; border-bottom: 1px solid var(--border); background: transparent; color: var(--text); padding: 9px 12px; font-family: 'Plus Jakarta Sans'; font-size: 13px; outline: none; border-radius: 10px 10px 0 0; }
+.ms-search::placeholder { color: var(--muted); }
+.ms-actions { display: flex; border-bottom: 1px solid var(--border); }
+.ms-act { flex: 1; background: none; border: none; color: var(--orange); font-size: 12px; font-weight: 600; cursor: pointer; padding: 7px 6px; font-family: 'Plus Jakarta Sans'; transition: background .15s; }
+.ms-act:hover { background: var(--orange-lt); }
+.ms-act + .ms-act { border-left: 1px solid var(--border); }
+.ms-list { overflow-y: auto; flex: 1; }
+.ms-item { display: flex; align-items: center; gap: 9px; padding: 7px 12px; cursor: pointer; font-size: 13px; color: var(--text2); transition: background .12s; }
+.ms-item:hover { background: var(--purple-lt); }
+.ms-item.sel { color: var(--purple); font-weight: 600; }
+.ms-cb { width: 14px; height: 14px; border: 1.5px solid var(--border); border-radius: 3px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 9px; transition: all .15s; }
+.ms-item.sel .ms-cb { background: var(--orange); border-color: var(--orange); color: #fff; }
+select { background: var(--surface2); color: var(--text); border: 1.5px solid var(--border); border-radius: 7px; padding: 6px 11px; font-family: 'Plus Jakarta Sans'; font-size: 13px; cursor: pointer; min-width: 140px; outline: none; }
+select:focus { border-color: var(--purple); }
+
+/* ── TABS ── */
+#tab-row { display: none; gap: 0; padding: 0 28px; border-bottom: 2px solid var(--border); background: var(--surface); position: sticky; top: 112px; z-index: 150; }
+.tab { padding: 12px 20px; font-size: 13px; font-weight: 700; cursor: pointer; color: var(--muted); border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all .2s; font-family: 'Syne'; white-space: nowrap; }
+.tab.active { color: var(--orange); border-bottom-color: var(--orange); }
+.tab:hover:not(.active) { color: var(--text); background: var(--surface2); }
+
+/* ── DASHBOARD ── */
+#dashboard { display: none; padding: 24px 28px; max-width: 1600px; margin: 0 auto; }
+.panel { display: none; } .panel.active { display: block; }
+
+/* KPIs */
+.kpi-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(165px,1fr)); gap: 14px; margin-bottom: 24px; }
+.kpi { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; position: relative; overflow: hidden; box-shadow: 0 1px 4px rgba(80,0,179,.06); transition: box-shadow .2s; }
+.kpi:hover { box-shadow: 0 4px 16px rgba(80,0,179,.1); }
+.kpi::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--orange), var(--purple)); }
+.kpi-lbl { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 10px; font-weight: 600; }
+.kpi-val { font-family: 'Syne'; font-size: 28px; font-weight: 800; }
+.kpi-val.o{color:var(--orange)} .kpi-val.p{color:var(--purple)}
+.kpi-val.r{color:var(--red)}    .kpi-val.g{color:var(--green)}
+.kpi-sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+/* Charts */
+.chart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 24px; }
+.chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; box-shadow: 0 1px 4px rgba(80,0,179,.05); }
+.chart-card.full { grid-column: 1/-1; }
+.ch-title { font-family: 'Syne'; font-weight: 700; font-size: 14px; color: var(--text); margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; }
+.ch-sub { color: var(--muted); font-size: 11px; font-family: 'Plus Jakarta Sans'; font-weight: 400; }
+canvas { max-height: 260px; }
+
+/* Tables */
+.sec-title { font-family: 'Syne'; font-weight: 700; font-size: 15px; color: var(--text); margin-bottom: 13px; display: flex; align-items: center; gap: 9px; }
+.badge-r { padding: 2px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; background: var(--red-lt); color: var(--red); border: 1px solid rgba(232,39,75,.2); }
+.tbl-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: auto; max-height: 450px; margin-bottom: 24px; box-shadow: 0 1px 4px rgba(80,0,179,.05); }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+thead th { background: var(--surface2); padding: 10px 14px; text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 700; position: sticky; top: 0; z-index: 2; border-bottom: 1px solid var(--border); }
+tbody tr { border-bottom: 1px solid rgba(0,0,0,.04); transition: background .12s; }
+tbody tr:hover { background: var(--purple-lt); }
+tbody td { padding: 10px 14px; color: var(--text2); }
+.fc { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 5px; font-size: 12px; font-weight: 600; margin: 1px; }
+.fc.r{background:var(--red-lt);color:var(--red)} .fc.y{background:var(--yellow-lt);color:var(--yellow)} .fc.g{background:var(--green-lt);color:var(--green)}
+.empty { color: var(--muted); text-align: center; padding: 48px; font-size: 13px; }
+.ag-search { width: 100%; background: var(--surface); border: 1.5px solid var(--border); border-radius: 9px; padding: 10px 16px; color: var(--text); font-size: 13px; font-family: 'Plus Jakarta Sans'; outline: none; margin-bottom: 14px; transition: border-color .15s; }
+.ag-search:focus { border-color: var(--purple); }
+.sum-bar { font-size: 13px; color: var(--muted); padding: 0 0 14px; }
+.sum-bar strong { color: var(--orange); font-weight: 600; }
+
+@media(max-width:900px){ .chart-grid{grid-template-columns:1fr} #dashboard{padding:16px} .th-grid{grid-template-columns:1fr} }
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-icon" style="width:34px;height:34px;border-radius:9px;overflow:hidden;flex-shrink:0"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="34" height="34" style="border-radius:9px;display:block">
+  <defs><linearGradient id="bgi" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#5000b3"/><stop offset="100%" style="stop-color:#2a0060"/></linearGradient></defs>
+  <rect width="64" height="64" rx="10" fill="url(#bgi)"/>
+  <text x="32" y="36" text-anchor="middle" dominant-baseline="middle" font-family="Arial Black,sans-serif" font-weight="900" font-size="18" fill="none" stroke="white" stroke-width="1.5" letter-spacing="0.5">WFM</text>
+  <text x="32" y="36" text-anchor="middle" dominant-baseline="middle" font-family="Arial Black,sans-serif" font-weight="900" font-size="18" fill="#1a0050" letter-spacing="0.5">WFM</text>
+</svg></div>
+    Agent<em>Metrics</em>
+  </div>
+  <div class="topbar-right">
+    <div class="meta-txt" id="meta-txt"></div>
+    <button class="tbtn tbtn-outline" id="btn-thresholds" onclick="openThresholds()" style="display:none">⚙ Thresholds</button>
+    <label class="tbtn tbtn-orange" for="file-input" id="topbar-upload" style="display:none">⬆ Upload New File</label>
+    <input type="file" id="file-input" accept=".xlsx,.xls">
+  </div>
+</div>
+
+<!-- LANDING -->
+<div id="landing">
+  <div class="land-icon" style="animation:float 3.5s ease-in-out infinite;margin-bottom:22px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="80" height="80" style="border-radius:16px;display:block;box-shadow:0 8px 30px rgba(80,0,179,.25)">
+  <defs><linearGradient id="bgl" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#5000b3"/><stop offset="100%" style="stop-color:#ff6400"/></linearGradient></defs>
+  <rect width="64" height="64" rx="12" fill="url(#bgl)"/>
+  <text x="32" y="36" text-anchor="middle" dominant-baseline="middle" font-family="Arial Black,sans-serif" font-weight="900" font-size="18" fill="none" stroke="white" stroke-width="2" letter-spacing="0.5">WFM</text>
+  <text x="32" y="36" text-anchor="middle" dominant-baseline="middle" font-family="Arial Black,sans-serif" font-weight="900" font-size="18" fill="rgba(255,255,255,0.15)" letter-spacing="0.5">WFM</text>
+</svg></div>
+  <div class="land-title">Drop your <em>Excel file</em> to begin</div>
+  <div class="land-sub">Upload your Agent Metric Report and get a full interactive workforce dashboard — no server needed, everything runs in your browser.</div>
+  <label class="land-upload" for="file-input">⬆ &nbsp; Upload Excel File</label>
+  <div class="land-note">Supports <span>.xlsx</span> · Reads sheet <span>"NEW - RAW"</span></div>
+  <div class="land-chips">
+    <div class="chip">📊 KPI Overview</div>
+    <div class="chip">📅 Weekly Trends</div>
+    <div class="chip">👥 Group Breakdown</div>
+    <div class="chip">🔎 Agent Drilldown</div>
+    <div class="chip">🚩 Flag Detection</div>
+    <div class="chip">⚙ Custom Thresholds</div>
+  </div>
+</div>
+
+<!-- LOADING -->
+<div id="loading">
+  <div class="spinner"></div>
+  <div class="load-txt">Processing your file…</div>
+  <div class="load-sub" id="load-step">Reading Excel data</div>
+</div>
+
+<!-- THRESHOLD MODAL -->
+<div class="modal-overlay" id="th-modal" onclick="closeOnOverlay(event)">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title"><span>⚙</span> Metric Thresholds</div>
+      <button class="modal-close" onclick="closeThresholds()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="th-section-title">🚩 Flag Thresholds — triggers a flag when exceeded / missed</div>
+      <div class="th-grid">
+        <div class="th-field">
+          <div class="th-label"><span class="th-dot" style="background:var(--red)"></span>Overbreak Flag (above)</div>
+          <div class="th-input-wrap">
+            <input class="th-input" id="t-ob" type="number" min="0" max="120" step="1" value="5">
+            <span class="th-unit">minutes</span>
+          </div>
+          <div class="th-hint">Agent-day overbreak exceeding this is flagged</div>
+        </div>
+        <div class="th-field">
+          <div class="th-label"><span class="th-dot" style="background:var(--red)"></span>Sys Issues Flag (above)</div>
+          <div class="th-input-wrap">
+            <input class="th-input" id="t-sys" type="number" min="0" max="480" step="1" value="10">
+            <span class="th-unit">minutes</span>
+          </div>
+          <div class="th-hint">System downtime exceeding this is flagged</div>
+        </div>
+        <div class="th-field">
+          <div class="th-label"><span class="th-dot" style="background:var(--red)"></span>Low Productivity Flag (below)</div>
+          <div class="th-input-wrap">
+            <input class="th-input" id="t-lp" type="number" min="0" max="100" step="1" value="50">
+            <span class="th-unit">%</span>
+          </div>
+          <div class="th-hint">Productivity rate below this is flagged</div>
+        </div>
+        <div class="th-field">
+          <div class="th-label"><span class="th-dot" style="background:var(--red)"></span>Low Occupancy Rate Flag (below)</div>
+          <div class="th-input-wrap">
+            <input class="th-input" id="t-la" type="number" min="0" max="100" step="1" value="50">
+            <span class="th-unit">%</span>
+          </div>
+          <div class="th-hint">Occupancy rate below this is flagged</div>
+        </div>
+      </div>
+
+      <hr class="th-divider">
+      <div class="th-section-title">🎯 KPI Targets — shown on Overview cards</div>
+      <div class="th-grid">
+        <div class="th-field">
+          <div class="th-label"><span class="th-dot" style="background:var(--orange)"></span>Productivity Target</div>
+          <div class="th-input-wrap">
+            <input class="th-input" id="t-prod-tgt" type="number" min="0" max="100" step="1" value="70">
+            <span class="th-unit">%</span>
+          </div>
+          <div class="th-hint">KPI card turns green at or above this</div>
+        </div>
+        <div class="th-field">
+          <div class="th-label"><span class="th-dot" style="background:var(--purple)"></span>Occupancy Rate Target</div>
+          <div class="th-input-wrap">
+            <input class="th-input" id="t-avail-tgt" type="number" min="0" max="100" step="1" value="80">
+            <span class="th-unit">%</span>
+          </div>
+          <div class="th-hint">KPI card turns green at or above this</div>
+        </div>
+        <div class="th-field">
+          <div class="th-label"><span class="th-dot" style="background:var(--red)"></span>Overbreak Alert (avg, above)</div>
+          <div class="th-input-wrap">
+            <input class="th-input" id="t-ob-alert" type="number" min="0" max="60" step="0.5" value="2">
+            <span class="th-unit">min avg</span>
+          </div>
+          <div class="th-hint">Avg overbreak KPI turns red above this</div>
+        </div>
+        <div class="th-field">
+          <div class="th-label"><span class="th-dot" style="background:var(--red)"></span>% Overbreak Alert (above)</div>
+          <div class="th-input-wrap">
+            <input class="th-input" id="t-pob-alert" type="number" min="0" max="100" step="1" value="10">
+            <span class="th-unit">%</span>
+          </div>
+          <div class="th-hint">% agents with overbreak turns red above this</div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="th-reset" onclick="resetThresholds()">↺ Reset to Defaults</button>
+      <div class="th-preview" id="th-preview"></div>
+      <button class="th-save" onclick="saveThresholds()">Apply Thresholds</button>
+    </div>
+  </div>
+</div>
+
+<!-- FILTERS -->
+<div id="filters-bar">
+  <div class="filter-group">
+    <div class="filter-label">Week Beginning</div>
+    <div class="ms-wrap" id="ms-wb">
+      <div class="ms-trigger" onclick="toggleDrop('ms-wb')">
+        <span class="ms-txt" id="ms-wb-txt">All WBs</span>
+        <span class="ms-badge" id="ms-wb-badge" style="display:none"></span>
+        <span class="ms-arrow">▼</span>
+      </div>
+      <div class="ms-drop hidden" id="ms-wb-drop">
+        <input class="ms-search" placeholder="🔍 Search WB…" oninput="filterDrop('ms-wb',this.value)">
+        <div class="ms-actions">
+          <button class="ms-act" onclick="doAll('ms-wb')">All</button>
+          <button class="ms-act" onclick="doClear('ms-wb')">Clear</button>
+          <button class="ms-act" onclick="doLast('ms-wb',4)">Last 4</button>
+          <button class="ms-act" onclick="doLast('ms-wb',8)">Last 8</button>
+        </div>
+        <div class="ms-list" id="ms-wb-list"></div>
+      </div>
+    </div>
+  </div>
+  <div class="filter-group">
+    <div class="filter-label">Group / Team</div>
+    <div class="ms-wrap" id="ms-grp">
+      <div class="ms-trigger" onclick="toggleDrop('ms-grp')">
+        <span class="ms-txt" id="ms-grp-txt">All Groups</span>
+        <span class="ms-badge" id="ms-grp-badge" style="display:none"></span>
+        <span class="ms-arrow">▼</span>
+      </div>
+      <div class="ms-drop hidden" id="ms-grp-drop">
+        <input class="ms-search" placeholder="🔍 Search group…" oninput="filterDrop('ms-grp',this.value)">
+        <div class="ms-actions">
+          <button class="ms-act" onclick="doAll('ms-grp')">All</button>
+          <button class="ms-act" onclick="doClear('ms-grp')">Clear</button>
+        </div>
+        <div class="ms-list" id="ms-grp-list"></div>
+      </div>
+    </div>
+  </div>
+  <div class="filter-group">
+    <div class="filter-label">Day of Week</div>
+    <select id="day-sel" onchange="applyFilters()">
+      <option value="all">All Days</option>
+      <option>Monday</option><option>Tuesday</option><option>Wednesday</option>
+      <option>Thursday</option><option>Friday</option><option>Saturday</option><option>Sunday</option>
+    </select>
+  </div>
+  <div class="filter-group">
+    <div class="filter-label">Flag Focus</div>
+    <select id="flag-sel" onchange="applyFilters()">
+      <option value="all">All Records</option>
+      <option value="ob">Overbreak exceeded</option>
+      <option value="lp">Low Productivity</option>
+      <option value="la">Low Occupancy Rate</option>
+      <option value="sys">Sys Issues exceeded</option>
+    </select>
+  </div>
+</div>
+
+<!-- TABS -->
+<div id="tab-row">
+  <div class="tab active" onclick="switchTab('ov')">📊 Overview</div>
+  <div class="tab" onclick="switchTab('wk')">📅 Weekly</div>
+  <div class="tab" onclick="switchTab('gp')">👥 Groups</div>
+  <div class="tab" onclick="switchTab('ag')">🔎 Agents</div>
+  <div class="tab" onclick="switchTab('fl')">🚩 Flags</div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard">
+  <div class="panel active" id="panel-ov">
+    <div class="sum-bar" id="sum-bar"></div>
+    <div class="kpi-grid" id="kpi-grid"></div>
+    <div class="chart-grid">
+      <div class="chart-card full">
+        <div class="ch-title">Weekly Productivity &amp; Occupancy Rate <span class="ch-sub">Selected WBs — chronological</span></div>
+        <canvas id="c-trend"></canvas>
+      </div>
+      <div class="chart-card">
+        <div class="ch-title">Avg Overbreak per WB <span class="ch-sub">Minutes</span></div>
+        <canvas id="c-ob"></canvas>
+      </div>
+      <div class="chart-card">
+        <div class="ch-title">Occupancy Distribution <span class="ch-sub">Agent-day count</span></div>
+        <canvas id="c-occ"></canvas>
+      </div>
+    </div>
+  </div>
+  <div class="panel" id="panel-wk">
+    <div class="chart-grid">
+      <div class="chart-card full">
+        <div class="ch-title">Group Productivity Trend <span class="ch-sub">Key groups · Selected WBs</span></div>
+        <canvas id="c-wk-prod" style="max-height:300px"></canvas>
+      </div>
+      <div class="chart-card full">
+        <div class="ch-title">% Agents with Overbreak per WB</div>
+        <canvas id="c-wk-ob" style="max-height:240px"></canvas>
+      </div>
+    </div>
+    <div class="sec-title">Weekly Summary Table</div>
+    <div class="tbl-wrap"><table id="t-weekly"></table></div>
+  </div>
+  <div class="panel" id="panel-gp">
+    <div class="chart-grid">
+      <div class="chart-card"><div class="ch-title">Avg Productivity by Group</div><canvas id="c-gp-prod"></canvas></div>
+      <div class="chart-card"><div class="ch-title">Avg Overbreak by Group <span class="ch-sub">Minutes</span></div><canvas id="c-gp-ob"></canvas></div>
+    </div>
+    <div class="sec-title">Group Detail</div>
+    <div class="tbl-wrap"><table id="t-groups"></table></div>
+  </div>
+  <div class="panel" id="panel-ag">
+    <input class="ag-search" type="text" placeholder="🔍  Search agent name…" id="ag-search" oninput="renderAgents()">
+    <div class="tbl-wrap"><table id="t-agents"></table></div>
+  </div>
+  <div class="panel" id="panel-fl">
+    <div class="kpi-grid" id="flag-kpis" style="margin-bottom:18px"></div>
+    <div class="sec-title">Flagged Agent-Days <span class="badge-r" id="flag-cnt">0</span></div>
+    <div class="tbl-wrap"><table id="t-flags"></table></div>
+  </div>
+</div>
+
+<script>
+// ─── DEFAULTS ────────────────────────────────────────────────────────────────
+const DEFAULTS = { ob:5, sys:10, lp:50, la:50, prodTgt:70, availTgt:80, obAlert:2, pobAlert:10 };
+let T = { ...DEFAULTS }; // live thresholds
+
+// ─── STATE ───────────────────────────────────────────────────────────────────
+let ALL_WBS=[], ALL_GROUPS=[], RAW=[], WO={}, WG={}, FD=[], selWBs=[];
+const charts={};
+const MS={ 'ms-wb':{sel:new Set(),all:[]}, 'ms-grp':{sel:new Set(),all:[]} };
+const C = { o:'#ff6400', p:'#5000b3', g:'#0a7c4e', r:'#e8274b', y:'#d97706' };
+
+// ─── THRESHOLD MODAL ─────────────────────────────────────────────────────────
+function openThresholds() {
+  // Sync inputs from live T
+  document.getElementById('t-ob').value = T.ob;
+  document.getElementById('t-sys').value = T.sys;
+  document.getElementById('t-lp').value = T.lp;
+  document.getElementById('t-la').value = T.la;
+  document.getElementById('t-prod-tgt').value = T.prodTgt;
+  document.getElementById('t-avail-tgt').value = T.availTgt;
+  document.getElementById('t-ob-alert').value = T.obAlert;
+  document.getElementById('t-pob-alert').value = T.pobAlert;
+  updatePreview();
+  document.getElementById('th-modal').classList.add('open');
+}
+function closeThresholds() { document.getElementById('th-modal').classList.remove('open'); }
+function closeOnOverlay(e) { if (e.target === document.getElementById('th-modal')) closeThresholds(); }
+
+function updatePreview() {
+  const ob = parseFloat(document.getElementById('t-ob').value)||5;
+  const lp = parseFloat(document.getElementById('t-lp').value)||50;
+  document.getElementById('th-preview').textContent =
+    `Overbreak flag: > ${ob} min · Low Prod: < ${lp}%`;
+}
+// live preview on any input change
+document.querySelectorAll('.th-input').forEach(el => el.addEventListener('input', updatePreview));
+
+function saveThresholds() {
+  const g = id => parseFloat(document.getElementById(id).value);
+  T = {
+    ob:      Math.max(0, g('t-ob')),
+    sys:     Math.max(0, g('t-sys')),
+    lp:      Math.max(0, Math.min(100, g('t-lp'))) / 100,
+    la:      Math.max(0, Math.min(100, g('t-la'))) / 100,
+    prodTgt: Math.max(0, Math.min(100, g('t-prod-tgt'))) / 100,
+    availTgt:Math.max(0, Math.min(100, g('t-avail-tgt'))) / 100,
+    obAlert: Math.max(0, g('t-ob-alert')),
+    pobAlert:Math.max(0, Math.min(100, g('t-pob-alert'))) / 100,
+  };
+  closeThresholds();
+  if (RAW.length) renderAll();
+}
+
+function resetThresholds() {
+  document.getElementById('t-ob').value = DEFAULTS.ob;
+  document.getElementById('t-sys').value = DEFAULTS.sys;
+  document.getElementById('t-lp').value = DEFAULTS.lp;
+  document.getElementById('t-la').value = DEFAULTS.la;
+  document.getElementById('t-prod-tgt').value = DEFAULTS.prodTgt;
+  document.getElementById('t-avail-tgt').value = DEFAULTS.availTgt;
+  document.getElementById('t-ob-alert').value = DEFAULTS.obAlert;
+  document.getElementById('t-pob-alert').value = DEFAULTS.pobAlert;
+  updatePreview();
+}
+
+// Init T from defaults (convert % fields)
+function initT() {
+  T = { ob:DEFAULTS.ob, sys:DEFAULTS.sys,
+        lp:DEFAULTS.lp/100, la:DEFAULTS.la/100,
+        prodTgt:DEFAULTS.prodTgt/100, availTgt:DEFAULTS.availTgt/100,
+        obAlert:DEFAULTS.obAlert, pobAlert:DEFAULTS.pobAlert/100 };
+}
+
+// ─── FILE UPLOAD ─────────────────────────────────────────────────────────────
+document.getElementById('file-input').addEventListener('change', function(e) {
+  const file = e.target.files[0]; if (!file) return;
+  document.getElementById('landing').style.display='none';
+  document.getElementById('loading').style.display='flex';
+  setTimeout(()=>processFile(file), 60);
+  this.value='';
+});
+function setStep(t){ document.getElementById('load-step').textContent=t; }
+
+function processFile(file) {
+  const reader=new FileReader();
+  reader.onload=function(e){
+    try {
+      setStep('Parsing Excel workbook…');
+      const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array',cellDates:false,raw:true});
+      const sn=wb.SheetNames.find(n=>n.replace(/\s/g,'').toUpperCase()==='NEW-RAW')||wb.SheetNames[0];
+      setStep(`Reading sheet "${sn}"…`);
+      const rows=XLSX.utils.sheet_to_json(wb.Sheets[sn],{raw:true,defval:null});
+      setStep('Processing '+rows.length.toLocaleString()+' rows…');
+      setTimeout(()=>buildData(rows),20);
+    } catch(err) {
+      alert('Could not read file:\n'+err.message+'\n\nMake sure it has a "NEW - RAW" sheet.');
+      document.getElementById('loading').style.display='none';
+      document.getElementById('landing').style.display='flex';
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function fracMin(v){ if(v===null||v===undefined||v==='')return 0; const n=parseFloat(v); return isNaN(n)?0:n*1440; }
+
+function buildData(rows){
+  setStep('Cleaning data…'); RAW=[];
+  rows.forEach(r=>{
+    const agent=r['Agent Name'],wb=r['WB'];
+    if(!agent||!wb||typeof agent!=='string') return;
+    let ds='';
+    const d=r['Date'];
+    if(d!==null&&d!==undefined){
+      if(typeof d==='number'){const dt=XLSX.SSF.parse_date_code(d);ds=`${dt.y}-${String(dt.m).padStart(2,'0')}-${String(dt.d).padStart(2,'0')}`;}
+      else ds=String(d).slice(0,10);
+    }
+    const c01=v=>{ const n=parseFloat(v); return isNaN(n)||n<0||n>1?null:n; };
+    RAW.push({ Date:ds, WB:String(wb).trim(), 'Day of Week':r['Day of Week']||'', Group:r['Group']||'', 'Agent Name':agent.trim(),
+      Occupancy:c01(r['Occupancy']), 'Productivity Rate':c01(r['Productivity Rate']), 'Occupancy':c01(r['Occupancy']),
+      'Overbreak Duration_min':fracMin(r['Overbreak Duration']),
+      'Total Break Duration_min':fracMin(r['Total Break Duration']),
+      'System Issues time_min':fracMin(r['System Issues time']),
+      'Bathroom time_min':fracMin(r['Bathroom time']),
+      'Tea break time_min':fracMin(r['Tea break time']),
+      'Lunch time_min':fracMin(r['Lunch time']),
+      'Coaching time_min':fracMin(r['Coaching time']),
+    });
+  });
+  setStep('Building aggregations…');
+  setTimeout(()=>{ buildAgg(); initUI(); },20);
+}
+
+function wbDate(wb){ const p=wb.replace('WB ','').split('.'); return p.length===3?new Date(2000+parseInt(p[2]),parseInt(p[0])-1,parseInt(p[1])):new Date(0); }
+
+function buildAgg(){
+  ALL_WBS=[...new Set(RAW.map(r=>r.WB))].sort((a,b)=>wbDate(a)-wbDate(b));
+  ALL_GROUPS=[...new Set(RAW.map(r=>r.Group))].filter(Boolean).sort();
+  WO={}; ALL_WBS.forEach(wb=>{
+    const rs=RAW.filter(r=>r.WB===wb);
+    WO[wb]={ WB:wb, agents:new Set(rs.map(r=>r['Agent Name'])).size,
+      avg_prod:avg(rs,'Productivity Rate'), avg_ocr:avg(rs,'Avail Rate'), avg_occ:avg(rs,'Occupancy'),
+      avg_overbreak:avg(rs,'Overbreak Duration_min'),
+      pct_overbreak:rs.length?rs.filter(r=>r['Overbreak Duration_min']>T.ob).length/rs.length:0,
+      avg_break:avg(rs,'Total Break Duration_min'), avg_sys:avg(rs,'System Issues time_min') };
+  });
+  WG={}; ALL_WBS.forEach(wb=>ALL_GROUPS.forEach(g=>{
+    const rs=RAW.filter(r=>r.WB===wb&&r.Group===g); if(!rs.length)return;
+    WG[wb+'||'+g]={ WB:wb,Group:g, agents:new Set(rs.map(r=>r['Agent Name'])).size,
+      avg_prod:avg(rs,'Productivity Rate'), avg_ocr:avg(rs,'Avail Rate'), avg_occ:avg(rs,'Occupancy'),
+      avg_overbreak:avg(rs,'Overbreak Duration_min'),
+      pct_overbreak:rs.length?rs.filter(r=>r['Overbreak Duration_min']>T.ob).length/rs.length:0,
+      avg_break:avg(rs,'Total Break Duration_min') };
+  }));
+}
+
+function initUI(){
+  MS['ms-wb'].all=ALL_WBS; MS['ms-grp'].all=ALL_GROUPS;
+  MS['ms-wb'].sel.clear(); ALL_WBS.slice(-4).forEach(v=>MS['ms-wb'].sel.add(v));
+  MS['ms-grp'].sel.clear();
+  buildDrop('ms-wb'); buildDrop('ms-grp');
+  const dates=RAW.map(r=>r.Date).filter(Boolean).sort();
+  document.getElementById('meta-txt').textContent=`${RAW.length.toLocaleString()} records · ${dates[0]} – ${dates[dates.length-1]}`;
+  document.getElementById('loading').style.display='none';
+  document.getElementById('filters-bar').style.display='flex';
+  document.getElementById('tab-row').style.display='flex';
+  document.getElementById('dashboard').style.display='block';
+  document.getElementById('topbar-upload').style.display='flex';
+  document.getElementById('btn-thresholds').style.display='flex';
+  applyFilters();
+}
+
+// ─── MULTISELECT ─────────────────────────────────────────────────────────────
+function buildDrop(id){
+  const st=MS[id],list=document.getElementById(id+'-list'); list.innerHTML='';
+  st.all.forEach(val=>{
+    const el=document.createElement('div'); el.className='ms-item'+(st.sel.has(val)?' sel':''); el.dataset.val=val;
+    el.innerHTML=`<div class="ms-cb">${st.sel.has(val)?'✓':''}</div><span>${val}</span>`;
+    el.onclick=()=>{ st.sel.has(val)?st.sel.delete(val):st.sel.add(val); buildDrop(id); applyFilters(); };
+    list.appendChild(el);
+  }); updateTrigger(id);
+}
+function filterDrop(id,q){ document.querySelectorAll(`#${id}-list .ms-item`).forEach(el=>{ el.style.display=el.dataset.val.toLowerCase().includes(q.toLowerCase())?'':'none'; }); }
+function toggleDrop(id){
+  const drop=document.getElementById(id+'-drop'),trig=document.querySelector(`#${id} .ms-trigger`);
+  const open=!drop.classList.contains('hidden');
+  document.querySelectorAll('.ms-drop').forEach(d=>d.classList.add('hidden'));
+  document.querySelectorAll('.ms-trigger').forEach(t=>t.classList.remove('open'));
+  if(!open){ drop.classList.remove('hidden'); trig.classList.add('open'); }
+}
+document.addEventListener('click',e=>{ if(!e.target.closest('.ms-wrap')&&!e.target.closest('.modal')){ document.querySelectorAll('.ms-drop').forEach(d=>d.classList.add('hidden')); document.querySelectorAll('.ms-trigger').forEach(t=>t.classList.remove('open')); }});
+function doAll(id){ MS[id].all.forEach(v=>MS[id].sel.add(v)); buildDrop(id); applyFilters(); }
+function doClear(id){ MS[id].sel.clear(); buildDrop(id); applyFilters(); }
+function doLast(id,n){ MS[id].sel.clear(); MS[id].all.slice(-n).forEach(v=>MS[id].sel.add(v)); buildDrop(id); applyFilters(); }
+function updateTrigger(id){
+  const st=MS[id],txt=document.getElementById(id+'-txt'),badge=document.getElementById(id+'-badge');
+  const n=st.sel.size,tot=st.all.length;
+  if(n===0||n===tot){ txt.textContent=id==='ms-wb'?(n===0?'None selected':'All WBs'):'All Groups'; badge.style.display='none'; }
+  else if(n===1){ txt.textContent=[...st.sel][0]; badge.style.display='none'; }
+  else{ const s=id==='ms-wb'?[...st.sel].sort((a,b)=>ALL_WBS.indexOf(a)-ALL_WBS.indexOf(b)):[...st.sel]; txt.textContent=s[0]+'…'; badge.textContent=n; badge.style.display=''; }
+}
+
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
+function avg(arr,key){ const v=arr.map(r=>{ const x=parseFloat(r[key]); return isNaN(x)?null:x; }).filter(x=>x!==null); return v.length?v.reduce((a,b)=>a+b,0)/v.length:null; }
+function pct(v){ return v!==null&&!isNaN(v)?(v*100).toFixed(1)+'%':'—'; }
+function mns(v){ return v!==null&&!isNaN(v)?parseFloat(v).toFixed(1)+' m':'—'; }
+function cProd(v){ return !v||isNaN(v)?C.y:v<T.lp?C.r:v<T.prodTgt?C.y:C.g; }
+function cOcr(v){ return !v||isNaN(v)?C.y:v<T.la?C.r:v<T.availTgt?C.y:C.g; }
+function dc(id){ if(charts[id]){ charts[id].destroy(); delete charts[id]; } }
+function chartOpts(yLbl='',legend=false){
+  return { responsive:true,
+    plugins:{ legend:{display:legend,labels:{color:'#4a4870',font:{family:'Plus Jakarta Sans',size:11},padding:14}},
+      tooltip:{backgroundColor:'#fff',borderColor:'#e4e2ef',borderWidth:1,titleColor:C.o,bodyColor:'#1a1830',padding:10} },
+    scales:{ x:{ticks:{color:'#8b89aa',font:{size:11},maxRotation:45},grid:{color:'rgba(0,0,0,.05)'}},
+      y:{ticks:{color:'#8b89aa',font:{size:11}},grid:{color:'rgba(0,0,0,.06)'},title:{display:!!yLbl,text:yLbl,color:'#8b89aa',font:{size:11}}} } };
+}
+
+// ─── KPI THRESHOLD BADGE helper ───────────────────────────────────────────────
+function thBadge(val, tgt, higherIsBetter=true, unit='%', decimals=1) {
+  if (val === null || isNaN(val)) return '';
+  const display = unit === '%' ? (val*100).toFixed(decimals)+' %' : val.toFixed(decimals)+' '+unit;
+  const tgtDisplay = unit === '%' ? (tgt*100).toFixed(0)+'%' : tgt+' '+unit;
+  let cls, label;
+  if (higherIsBetter) {
+    if (val >= tgt) { cls='th-badge-ok'; label='✓ Target met'; }
+    else if (val >= tgt * .85) { cls='th-badge-warn'; label='⚠ Near target'; }
+    else { cls='th-badge-bad'; label='✗ Below target'; }
+  } else {
+    if (val <= tgt) { cls='th-badge-ok'; label='✓ Within limit'; }
+    else if (val <= tgt * 1.5) { cls='th-badge-warn'; label='⚠ Above limit'; }
+    else { cls='th-badge-bad'; label='✗ Exceeded'; }
+  }
+  return `<div class="kpi-threshold"><span class="th-badge ${cls}">${label}</span><span style="font-size:10px;color:var(--muted)">tgt: ${tgtDisplay}</span></div>`;
+}
+
+// ─── FILTER + RENDER ──────────────────────────────────────────────────────────
+function applyFilters(){
+  const wbSet=MS['ms-wb'].sel.size?MS['ms-wb'].sel:new Set(ALL_WBS);
+  const grpSet=MS['ms-grp'].sel.size?MS['ms-grp'].sel:null;
+  const day=document.getElementById('day-sel').value;
+  selWBs=ALL_WBS.filter(wb=>wbSet.has(wb));
+  FD=RAW.filter(r=>{ if(!wbSet.has(r.WB))return false; if(grpSet&&!grpSet.has(r.Group))return false; if(day!=='all'&&r['Day of Week']!==day)return false; return true; });
+  const wn=MS['ms-wb'].sel.size,wt=ALL_WBS.length,gn=MS['ms-grp'].sel.size,gt=ALL_GROUPS.length;
+  document.getElementById('sum-bar').innerHTML=
+    `<strong>${FD.length.toLocaleString()}</strong> agent-day records · <strong>${wn===0||wn===wt?'All WBs':wn+' WB'+(wn>1?'s':'')}</strong> · <strong>${gn===0||gn===gt?'All Groups':gn+' Group'+(gn>1?'s':'')}</strong> · <strong>${day==='all'?'All Days':day}</strong>`;
+  renderAll();
+}
+function switchTab(name){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelector(`[onclick="switchTab('${name}')"]`).classList.add('active');
+  document.getElementById('panel-'+name).classList.add('active');
+}
+function renderAll(){ renderKPIs(); renderOv(); renderWeekly(); renderGroups(); renderAgents(); renderFlags(); }
+
+// ─── KPIs ─────────────────────────────────────────────────────────────────────
+function renderKPIs(){
+  const d=FD,ap=avg(d,'Productivity Rate'),av=avg(d,'Occupancy'),ao=avg(d,'Occupancy');
+  const aob=avg(d,'Overbreak Duration_min'),pob=d.length?d.filter(r=>r['Overbreak Duration_min']>T.ob).length/d.length:0;
+  const ab=avg(d,'Total Break Duration_min'),as_=avg(d,'System Issues time_min');
+  const ua=new Set(d.map(r=>r['Agent Name'])).size;
+
+  const prodOk = ap!==null ? ap>=T.prodTgt?'g':ap>=T.prodTgt*.85?'g':'r' : 'o';
+  const availOk = av!==null ? av>=T.availTgt?'p':av>=T.availTgt*.85?'p':'r' : 'p';
+  const pobCls = pob>T.pobAlert?'r':'g';
+  const aobCls = aob!==null&&aob>T.obAlert?'r':'g';
+
+  document.getElementById('kpi-grid').innerHTML=`
+    <div class="kpi">
+      <div class="kpi-lbl">Avg Productivity</div>
+      <div class="kpi-val ${ap!==null&&ap>=T.prodTgt?'g':ap!==null&&ap<T.lp?'r':'o'}">${pct(ap)}</div>
+      <div class="kpi-sub">Target ≥ ${(T.prodTgt*100).toFixed(0)}%</div>
+      ${thBadge(ap,T.prodTgt,true,'%')}
+    </div>
+    <div class="kpi">
+      <div class="kpi-lbl">Avg Occupancy Rate</div>
+      <div class="kpi-val ${av!==null&&av>=T.availTgt?'g':av!==null&&av<T.la?'r':'p'}">${pct(av)}</div>
+      <div class="kpi-sub">Target ≥ ${(T.availTgt*100).toFixed(0)}%</div>
+      ${thBadge(av,T.availTgt,true,'%')}
+    </div>
+    <div class="kpi">
+      <div class="kpi-lbl">Avg Occupancy</div>
+      <div class="kpi-val ${ao!==null&&ao<.5?'r':'g'}">${pct(ao)}</div>
+      <div class="kpi-sub">Filtered agents</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-lbl">% With Overbreak</div>
+      <div class="kpi-val ${pobCls}">${(pob*100).toFixed(1)}%</div>
+      <div class="kpi-sub">Flag threshold: &gt; ${T.ob} min</div>
+      ${thBadge(pob,T.pobAlert,false,'%')}
+    </div>
+    <div class="kpi">
+      <div class="kpi-lbl">Avg Break Duration</div>
+      <div class="kpi-val o">${mns(ab)}</div>
+      <div class="kpi-sub">Per agent-day</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-lbl">Avg Sys Issues</div>
+      <div class="kpi-val ${as_!==null&&as_>T.sys?'r':'g'}">${mns(as_)}</div>
+      <div class="kpi-sub">Flag: &gt; ${T.sys} min</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-lbl">Agents Tracked</div>
+      <div class="kpi-val p">${ua}</div>
+      <div class="kpi-sub">${d.length.toLocaleString()} agent-days</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-lbl">Avg Overbreak</div>
+      <div class="kpi-val ${aobCls}">${mns(aob)}</div>
+      <div class="kpi-sub">Alert: &gt; ${T.obAlert} min avg</div>
+      ${thBadge(aob!==null?aob/60:null,T.obAlert/60,false,'min',1)}
+    </div>`;
+}
+
+// ─── OVERVIEW CHARTS ──────────────────────────────────────────────────────────
+function renderOv(){
+  const rows=selWBs.map(wb=>WO[wb]||{WB:wb,avg_prod:null,avg_ocr:null,avg_overbreak:0});
+  const labels=selWBs.map(w=>w.replace('WB ',''));
+  dc('trend');
+  charts['trend']=new Chart(document.getElementById('c-trend'),{
+    type:'line',
+    data:{labels,datasets:[
+      {label:'Productivity %',data:rows.map(r=>r.avg_prod!=null?+(r.avg_prod*100).toFixed(1):null),borderColor:C.o,backgroundColor:'rgba(255,100,0,.08)',tension:.4,pointRadius:4,pointBackgroundColor:C.o,fill:true,spanGaps:true},
+      {label:`Target ${(T.prodTgt*100).toFixed(0)}%`,data:rows.map(()=>(T.prodTgt*100)),borderColor:'rgba(255,100,0,.3)',borderDash:[5,5],pointRadius:0,fill:false},
+      {label:'Occupancy Rate %',data:rows.map(r=>r.avg_ocr!=null?+(r.avg_ocr*100).toFixed(1):null),borderColor:C.p,backgroundColor:'rgba(80,0,179,.06)',tension:.4,pointRadius:4,pointBackgroundColor:C.p,fill:true,spanGaps:true},
+      {label:`Occ Rate target ${(T.availTgt*100).toFixed(0)}%`,data:rows.map(()=>(T.availTgt*100)),borderColor:'rgba(80,0,179,.3)',borderDash:[5,5],pointRadius:0,fill:false},
+    ]},options:chartOpts('%',true)
+  });
+  dc('ob');
+  charts['ob']=new Chart(document.getElementById('c-ob'),{
+    type:'bar',
+    data:{labels,datasets:[
+      {label:'Avg Overbreak (min)',data:rows.map(r=>+((r.avg_overbreak||0)).toFixed(2)),backgroundColor:rows.map(r=>(r.avg_overbreak||0)>T.obAlert?'rgba(232,39,75,.7)':'rgba(255,100,0,.7)'),borderRadius:4},
+    ]},
+    options:{...chartOpts('Minutes'),plugins:{...chartOpts('Minutes').plugins,annotation:{annotations:{line1:{type:'line',yMin:T.obAlert,yMax:T.obAlert,borderColor:'rgba(232,39,75,.5)',borderWidth:1.5,borderDash:[4,4]}}}}}
+  });
+  const bins=new Array(10).fill(0);
+  FD.forEach(r=>{ const v=(r.Occupancy||0)*100; if(!isNaN(v)) bins[Math.min(Math.floor(v/10),9)]++; });
+  dc('occ');
+  charts['occ']=new Chart(document.getElementById('c-occ'),{
+    type:'bar',
+    data:{labels:['0-10','10-20','20-30','30-40','40-50','50-60','60-70','70-80','80-90','90-100'].map(l=>l+'%'),datasets:[{label:'Agents',data:bins,backgroundColor:'rgba(80,0,179,.7)',borderRadius:4}]},
+    options:chartOpts('Count')
+  });
+}
+
+// ─── WEEKLY ───────────────────────────────────────────────────────────────────
+function renderWeekly(){
+  const t=document.getElementById('t-weekly');
+  t.innerHTML=`<thead><tr><th>Week Beginning</th><th>Agents</th><th>Avg Prod</th><th>Avg Occ Rate</th><th>Avg Occ</th><th>Avg Overbreak</th><th>% Overbreak</th><th>Avg Break</th><th>Sys Issues</th></tr></thead>`;
+  const tb=document.createElement('tbody');
+  selWBs.slice().reverse().forEach(wb=>{
+    const r=WO[wb]||{WB:wb};
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td style="font-weight:700;color:var(--orange)">${wb}</td><td>${r.agents||'—'}</td>
+      <td style="color:${cProd(r.avg_prod)};font-weight:600">${pct(r.avg_prod)}</td>
+      <td style="color:${cOcr(r.avg_ocr)};font-weight:600">${pct(r.avg_ocr)}</td>
+      <td>${pct(r.avg_occ)}</td>
+      <td style="color:${(r.avg_overbreak||0)>T.obAlert?C.r:C.g};font-weight:600">${mns(r.avg_overbreak)}</td>
+      <td style="color:${(r.pct_overbreak||0)>T.pobAlert?C.r:(r.pct_overbreak||0)>T.pobAlert*.7?C.y:C.g};font-weight:600">${r.pct_overbreak!=null?(r.pct_overbreak*100).toFixed(1)+'%':'—'}</td>
+      <td>${mns(r.avg_break)}</td>
+      <td style="color:${(r.avg_sys||0)>T.sys?C.r:C.g}">${mns(r.avg_sys)}</td>`;
+    tb.appendChild(tr);
+  });
+  if(!selWBs.length) tb.innerHTML='<tr><td colspan="9" class="empty">No WBs selected</td></tr>';
+  t.appendChild(tb);
+  const grpSel=MS['ms-grp'].sel.size?[...MS['ms-grp'].sel]:null;
+  const major=grpSel?grpSel.slice(0,5):['Bookings','Furtherworks','Urgent','TTS','Tech Agent (Smoke) - Mark'];
+  const gClr=[C.o,C.p,C.g,C.r,C.y];
+  dc('wk-prod');
+  charts['wk-prod']=new Chart(document.getElementById('c-wk-prod'),{
+    type:'line',
+    data:{labels:selWBs.map(w=>w.replace('WB ','')),
+      datasets:[
+        ...major.map((g,i)=>({label:g,data:selWBs.map(wb=>{ const r=WG[wb+'||'+g]; return r&&r.avg_prod!=null?+(r.avg_prod*100).toFixed(1):null; }),borderColor:gClr[i%5],backgroundColor:'transparent',tension:.4,pointRadius:3,spanGaps:true})),
+        {label:`Prod target ${(T.prodTgt*100).toFixed(0)}%`,data:selWBs.map(()=>(T.prodTgt*100)),borderColor:'rgba(0,0,0,.2)',borderDash:[6,4],pointRadius:0,fill:false}
+      ]},
+    options:chartOpts('%',true)
+  });
+  const fwd=selWBs.map(wb=>WO[wb]||{pct_overbreak:0});
+  dc('wk-ob');
+  charts['wk-ob']=new Chart(document.getElementById('c-wk-ob'),{
+    type:'bar',
+    data:{labels:selWBs.map(w=>w.replace('WB ','')),
+      datasets:[{label:'% with Overbreak',data:fwd.map(r=>+((r.pct_overbreak||0)*100).toFixed(1)),
+        backgroundColor:fwd.map(r=>(r.pct_overbreak||0)>T.pobAlert?'rgba(232,39,75,.7)':'rgba(255,100,0,.65)'),borderRadius:4}]},
+    options:chartOpts('%')
+  });
+}
+
+// ─── GROUPS ───────────────────────────────────────────────────────────────────
+function renderGroups(){
+  const wbSet=new Set(selWBs),grpSet=MS['ms-grp'].sel.size?MS['ms-grp'].sel:null;
+  const gmap={};
+  Object.values(WG).forEach(r=>{
+    if(!wbSet.has(r.WB))return; if(grpSet&&!grpSet.has(r.Group))return;
+    if(!gmap[r.Group]) gmap[r.Group]=[];
+    gmap[r.Group].push(r);
+  });
+  const agg=Object.entries(gmap).map(([g,rs])=>({
+    Group:g,agents:Math.round(rs.reduce((s,r)=>s+(r.agents||0),0)/rs.length),
+    avg_prod:avg(rs,'avg_prod'),avg_ocr:avg(rs,'avg_ocr'),avg_occ:avg(rs,'avg_occ'),
+    avg_overbreak:avg(rs,'avg_overbreak'),pct_overbreak:avg(rs,'pct_overbreak'),avg_break:avg(rs,'avg_break'),
+  }));
+  const byProd=agg.slice().sort((a,b)=>(b.avg_prod||0)-(a.avg_prod||0));
+  const byOB=agg.slice().sort((a,b)=>(b.avg_overbreak||0)-(a.avg_overbreak||0));
+  dc('gp-prod');
+  charts['gp-prod']=new Chart(document.getElementById('c-gp-prod'),{
+    type:'bar',
+    data:{labels:byProd.map(r=>r.Group),datasets:[{label:'Avg Prod %',data:byProd.map(r=>r.avg_prod?+(r.avg_prod*100).toFixed(1):0),backgroundColor:byProd.map(r=>!r.avg_prod||r.avg_prod<T.lp?'rgba(232,39,75,.7)':r.avg_prod<T.prodTgt?'rgba(217,119,6,.7)':'rgba(255,100,0,.75)'),borderRadius:4}]},
+    options:{...chartOpts('%'),indexAxis:'y'}
+  });
+  dc('gp-ob');
+  charts['gp-ob']=new Chart(document.getElementById('c-gp-ob'),{
+    type:'bar',
+    data:{labels:byOB.map(r=>r.Group),datasets:[{label:'Avg Overbreak (min)',data:byOB.map(r=>+((r.avg_overbreak||0)).toFixed(2)),backgroundColor:byOB.map(r=>(r.avg_overbreak||0)>T.obAlert?'rgba(232,39,75,.7)':'rgba(80,0,179,.65)'),borderRadius:4}]},
+    options:{...chartOpts('min'),indexAxis:'y'}
+  });
+  const t=document.getElementById('t-groups');
+  t.innerHTML=`<thead><tr><th>Group</th><th>Agents</th><th>Avg Prod</th><th>Avg Occ Rate</th><th>Avg Occ</th><th>Avg Overbreak</th><th>% Overbreak</th><th>Avg Break</th><th>Status</th></tr></thead>`;
+  const tb=document.createElement('tbody');
+  byOB.forEach(r=>{
+    const f=[];
+    if((r.avg_overbreak||0)>T.obAlert) f.push('<span class="fc r">⚑ Overbreak</span>');
+    if(r.avg_prod&&r.avg_prod<T.lp) f.push('<span class="fc r">⚑ Low Prod</span>');
+    else if(r.avg_prod&&r.avg_prod<T.prodTgt) f.push('<span class="fc y">⚠ Near target</span>');
+    if(!f.length) f.push('<span class="fc g">✓ OK</span>');
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td style="font-weight:600;color:var(--text)">${r.Group}</td><td>${r.agents}</td>
+      <td style="color:${cProd(r.avg_prod)};font-weight:600">${pct(r.avg_prod)}</td>
+      <td style="color:${cOcr(r.avg_ocr)};font-weight:600">${pct(r.avg_ocr)}</td>
+      <td>${pct(r.avg_occ)}</td>
+      <td style="color:${(r.avg_overbreak||0)>T.obAlert?C.r:C.g};font-weight:600">${mns(r.avg_overbreak)}</td>
+      <td style="color:${(r.pct_overbreak||0)>T.pobAlert?C.r:(r.pct_overbreak||0)>T.pobAlert*.7?C.y:C.g};font-weight:600">${r.pct_overbreak!=null?(r.pct_overbreak*100).toFixed(1)+'%':'—'}</td>
+      <td>${mns(r.avg_break)}</td><td>${f.join('')}</td>`;
+    tb.appendChild(tr);
+  });
+  if(!agg.length) tb.innerHTML='<tr><td colspan="9" class="empty">No data for selection</td></tr>';
+  t.appendChild(tb);
+}
+
+// ─── AGENTS ───────────────────────────────────────────────────────────────────
+function renderAgents(){
+  const q=document.getElementById('ag-search').value.toLowerCase();
+  const d=FD.filter(r=>!q||r['Agent Name'].toLowerCase().includes(q));
+  const amap={};
+  d.forEach(r=>{ const k=r['Agent Name']; if(!amap[k]) amap[k]={name:k,group:r.Group,rows:[]}; amap[k].rows.push(r); });
+  const t=document.getElementById('t-agents');
+  t.innerHTML=`<thead><tr><th>Agent</th><th>Group</th><th>Days</th><th>Avg Prod</th><th>Avg Occ Rate</th><th>Avg Occ</th><th>Avg Overbreak</th><th>Total OB</th><th>Avg Break</th><th>Sys Issues</th><th>Flags</th></tr></thead>`;
+  const tb=document.createElement('tbody');
+  Object.values(amap).sort((a,b)=>a.name.localeCompare(b.name)).forEach(ag=>{
+    const rs=ag.rows;
+    const ap=avg(rs,'Productivity Rate'),av=avg(rs,'Occupancy'),ao=avg(rs,'Occupancy');
+    const aob=avg(rs,'Overbreak Duration_min'),tob=rs.reduce((s,r)=>s+(r['Overbreak Duration_min']||0),0);
+    const ab=avg(rs,'Total Break Duration_min'),as_=avg(rs,'System Issues time_min');
+    const f=[];
+    if(aob>T.ob) f.push('<span class="fc r">Overbreak</span>');
+    if(ap!==null&&ap<T.lp) f.push('<span class="fc r">Low Prod</span>');
+    else if(ap!==null&&ap<T.prodTgt) f.push('<span class="fc y">Near target</span>');
+    if(av!==null&&av<T.la) f.push('<span class="fc r">Low Occ Rate</span>');
+    if(as_!==null&&as_>T.sys) f.push('<span class="fc r">Sys Issues</span>');
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td style="font-weight:600;color:var(--text)">${ag.name}</td>
+      <td style="color:var(--muted);font-size:11px">${ag.group}</td><td>${rs.length}</td>
+      <td style="color:${cProd(ap)};font-weight:600">${pct(ap)}</td>
+      <td style="color:${cOcr(av)};font-weight:600">${pct(av)}</td><td>${pct(ao)}</td>
+      <td style="color:${aob>T.ob?C.r:C.g};font-weight:600">${mns(aob)}</td>
+      <td style="color:${tob>30?C.r:'inherit'};font-weight:600">${tob.toFixed(1)} m</td>
+      <td>${mns(ab)}</td><td style="color:${as_>T.sys?C.r:'inherit'}">${mns(as_)}</td>
+      <td>${f.join('')||'<span class="fc g">✓</span>'}</td>`;
+    tb.appendChild(tr);
+  });
+  if(!Object.keys(amap).length) tb.innerHTML='<tr><td colspan="11" class="empty">No agents for this selection</td></tr>';
+  t.appendChild(tb);
+}
+
+// ─── FLAGS ────────────────────────────────────────────────────────────────────
+function renderFlags(){
+  const d=FD,ft=document.getElementById('flag-sel').value;
+  const fl=d.map(r=>{
+    const ob=r['Overbreak Duration_min']||0,pr=r['Productivity Rate'],av=r['Occupancy'],sy=r['System Issues time_min']||0;
+    const f=[];
+    if(ob>T.ob) f.push('Overbreak');
+    if(pr!==null&&!isNaN(pr)&&pr<T.lp) f.push('Low Prod');
+    if(av!==null&&!isNaN(av)&&av<T.la) f.push('Low Occ Rate');
+    if(sy>T.sys) f.push('Sys Issues');
+    return {...r,_f:f,_ob:ob,_pr:pr,_av:av,_sy:sy};
+  }).filter(r=>{
+    if(ft==='all') return r._f.length>0;
+    if(ft==='ob') return r._ob>T.ob;
+    if(ft==='lp') return r._pr!==null&&!isNaN(r._pr)&&r._pr<T.lp;
+    if(ft==='la') return r._av!==null&&!isNaN(r._av)&&r._av<T.la;
+    if(ft==='sys') return r._sy>T.sys;
+    return false;
+  }).sort((a,b)=>b._ob-a._ob);
+  document.getElementById('flag-cnt').textContent=fl.length;
+  const nOB=d.filter(r=>(r['Overbreak Duration_min']||0)>T.ob).length;
+  const nLP=d.filter(r=>r['Productivity Rate']!==null&&!isNaN(r['Productivity Rate'])&&r['Productivity Rate']<T.lp).length;
+  const nLA=d.filter(r=>r['Occupancy']!==null&&!isNaN(r['Occupancy'])&&r['Occupancy']<T.la).length;
+  const nSY=d.filter(r=>(r['System Issues time_min']||0)>T.sys).length;
+  document.getElementById('flag-kpis').innerHTML=`
+    <div class="kpi"><div class="kpi-lbl">⏰ Overbreak Incidents</div><div class="kpi-val r">${nOB}</div><div class="kpi-sub">&gt; ${T.ob} min per agent-day</div></div>
+    <div class="kpi"><div class="kpi-lbl">📉 Low Productivity</div><div class="kpi-val r">${nLP}</div><div class="kpi-sub">&lt; ${(T.lp*100).toFixed(0)}%</div></div>
+    <div class="kpi"><div class="kpi-lbl">📶 Low Occupancy Rate</div><div class="kpi-val r">${nLA}</div><div class="kpi-sub">&lt; ${(T.la*100).toFixed(0)}%</div></div>
+    <div class="kpi"><div class="kpi-lbl">💻 Sys Issue Incidents</div><div class="kpi-val r">${nSY}</div><div class="kpi-sub">&gt; ${T.sys} min</div></div>`;
+  const t=document.getElementById('t-flags');
+  t.innerHTML=`<thead><tr><th>Agent</th><th>Group</th><th>Date</th><th>Week Beginning</th><th>Day</th><th>Overbreak</th><th>Productivity</th><th>Occ Rate</th><th>Sys Issues</th><th>Flags</th></tr></thead>`;
+  const tb=document.createElement('tbody');
+  fl.slice(0,500).forEach(r=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td style="font-weight:600;color:var(--text)">${r['Agent Name']}</td>
+      <td style="font-size:11px;color:var(--muted)">${r.Group}</td>
+      <td style="font-size:11px">${r.Date}</td>
+      <td style="font-size:11px;color:var(--orange);font-weight:600">${r.WB}</td>
+      <td style="font-size:11px">${r['Day of Week']}</td>
+      <td style="color:${r._ob>T.ob?C.r:C.g};font-weight:600">${r._ob.toFixed(1)} m</td>
+      <td style="color:${r._pr!==null&&!isNaN(r._pr)&&r._pr<T.lp?C.r:C.g};font-weight:600">${r._pr!==null&&!isNaN(r._pr)?pct(r._pr):'—'}</td>
+      <td style="color:${r._av!==null&&!isNaN(r._av)&&r._av<T.la?C.r:C.g};font-weight:600">${r._av!==null&&!isNaN(r._av)?pct(r._av):'—'}</td>
+      <td style="color:${r._sy>T.sys?C.r:'inherit'}">${r._sy.toFixed(1)} m</td>
+      <td>${r._f.map(f=>`<span class="fc r">${f}</span>`).join('')}</td>`;
+    tb.appendChild(tr);
+  });
+  if(!fl.length) tb.innerHTML='<tr><td colspan="10" class="empty">✓ No flags for current selection</td></tr>';
+  t.appendChild(tb);
+}
+
+// Init thresholds on load
+initT();
+</script>
+</body>
+</html>
